@@ -8,7 +8,7 @@ s.scope;
 // gcc to comment out line, gcap to comment out paragraph
 
 (
-{ MiBraids.ar([60, 61], Line.kr(dur:20), Line.kr(dur:20, doneAction: 2), 14, mul: 1) }.play;
+{ MiBraids.ar([60, 62], Line.kr(dur:20), Line.kr(dur:20, doneAction: 2), 14, mul: 1) }.play;
 { MiPlaits.ar(pitch: 60,
     engine:4, 
     harm:Line.kr(dur:20, doneAction:2), 
