@@ -43,15 +43,23 @@ require('packer').startup(function(use)
   use { 'davidgranstrom/telescope-scdoc.nvim' }
   use { "catppuccin/nvim", as = "catppuccin" }
   use { 'tpope/vim-commentary' }
+  use { "nvim-tree/nvim-web-devicons" }
   use { 'jiangmiao/auto-pairs' }
   use { 'hrsh7th/nvim-cmp' }
-  use {'L3MON4D3/LuaSnip'} 
+  -- use {'L3MON4D3/LuaSnip'} 
   use {'quangnguyen30192/cmp-nvim-tags'} -- completion source for tags
   use {'saadparwaiz1/cmp_luasnip'} -- completion source for luasnip snippets
   use {
     'nvim-lualine/lualine.nvim',
     requires = { 'nvim-tree/nvim-web-devicons', opt = true }
   }
+  use { 'otavioschwanck/arrow.nvim', config = function()
+  require('arrow').setup({
+    show_icons = false,
+    leader_key = ';', -- Recommended to be a single key
+    buffer_leader_key = 'm', -- Per Buffer Mappings
+  })
+  end }
   if packer_bootstrap then
     require('packer').sync()
   end
@@ -287,7 +295,7 @@ cmp.setup({
 		},
 	sources = {
 		{ name = 'tags', max_item_count = 3 },
-		-- { name = 'luasnip', max_item_count = 2 }, -- for luasnip users
+		{ name = 'luasnip', max_item_count = 2 }, -- for luasnip users
 		{ name = "buffer",  max_item_count = 1 }, -- text within current buffer
   		{ name = "path",  max_item_count = 1 }
 	},

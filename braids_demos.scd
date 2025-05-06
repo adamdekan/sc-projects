@@ -1,10 +1,10 @@
+s.quit;
 ( // Boot Pipewire Server
 Server.program = "pw-jack scsynth";
 s.boot;
 QtGUI.style = "kvantum-dark";
 )
 s.scope;
-s.quit;
 // gcc to comment out line, gcap to comment out paragraph
 
 (
@@ -24,7 +24,6 @@ SynthDef(\brds, {
     | note = 40, harm = 1, timbre = 1, morph = 0, decay = 0.1, eng = 2 |
 	var outenv =  EnvGen.kr(Env.perc(0.001, decay, 1, -4), doneAction: Done.freeSelf);
     var sig = MiPlaits.ar(note, eng, harm,  timbre, morph, mul:1);
-
 	Out.ar(0, sig * outenv);
 }).add;
 
@@ -75,12 +74,26 @@ m = {
     MiVerb.ar(Mix([sig1, sig2]));
 }.play
 )
-m.set(\engine, rrand(1, 10)); // sets arg/var for function
+m.set(\engine, rrand(1, 11)); // sets arg/var for function
+
+(
+{
+    var mod = BPF.ar(
+        WhiteNoise.ar(1!2),
+        freq: Saw.kr(0.25).range(4000, 40),
+        rq: 0.7);
+    var sig = SinOsc.ar(40, phase:mod, mul: Saw.kr(0.5));
+    Out.ar(0, sig!2);
+}.play;
+)
+s.stop;
 
 // 5 channel out
 a = { SinOsc.ar([100, 300, 500, 700, 900], mul: 0.2) }.play;
+a.free;
 c = { Mix(SinOsc.ar([800, 300, 500, 700, 900], mul: 0.1))!2 }.play; // mixed into LR
 c = { Splay.ar(SinOsc.ar([800, 300, 500, 700, 900], mul: 0.2)) }.play; // spread out in panorama
+c.free;
 
 // Instant cluster generator
 c = { Mix.fill(16, (SinOsc.ar(rrand(100, 3000), mul: 0.01))) }.play;
@@ -104,6 +117,10 @@ c = { Mix.fill(16, (SinOsc.ar(rrand(100, 3000), mul: 0.01))) }.play;
     MiBraids.ar(pit, timb, color, model, mul: 0.2)!2;
 }.play
 )
+
+a = { |x| x + 1 }; b = a.exp; [a.value(1), b.value(1)];
+a = Pseries(0, 0.25, inf).exp; a.asStream.nextN(8);
+{ a = LFNoise1.kr(1500); [a, a.exp] }.plot;
 
 (
 {
