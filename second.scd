@@ -1,6 +1,10 @@
+(
 { LFPulse.ar(LFPulse.kr(LFPulse.kr(0.2,0,0.5,8,10),0,0.5, 400,800),0,0.5,0.1) }.scope(1, zoom: 4);
-{ LFPulse.ar(LFPulse.kr(3, 0, 0.3, 200, 200), 0, 0.2, 0.1) }.scope(1, zoom: 4);
+{ LPulse.ar(LFPulse.kr(3, 0, 0.3, 200, 200), 0, 0.2, 0.1) }.scope(1, zoom: 4);
 { LFPulse.ar(XLine.kr(100,15000,6),0,0.5,0.1) }.scope(1, zoom: 4);
+)
+
+{SinOscFB.ar(freq:430.0!2, feedback:Line.kr(start:0.0, end:20.0, dur:10.0, mul:1.0, add:0.0, doneAction:2), mul:0.2, add:0.0)}.play;
 
 // pulse width modulation
 { LFPulse.ar(300,0,MouseY.kr(0,1),0.1) }.scope(1, zoom: 4);

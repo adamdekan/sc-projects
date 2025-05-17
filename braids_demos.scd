@@ -1,11 +1,17 @@
-s.quit;
-( // Boot Pipewire Server
-Server.program = "pw-jack scsynth";
-s.boot;
-QtGUI.style = "kvantum-dark";
+(
+x = { MiRings.ar(Impulse.ar(8),
+  damp:LFNoise1.kr(30),
+  pit:LFNoise0.kr(freq:4,
+    mul:1.0,
+    add:0.0).range(40, 70),
+  easteregg: 0)}.play;
 )
-s.scope;
-// gcc to comment out line, gcap to comment out paragraph
+
+
+
+
+
+
 
 (
 { MiBraids.ar([60, 62], Line.kr(dur:20), Line.kr(dur:20, doneAction: 2), 14, mul: 1) }.play;
@@ -15,22 +21,60 @@ s.scope;
     timbre:Line.kr(dur:20) ) 
 }.play;
 )
-Pbind(\scale, a, \degree, Pseq((0..7) ++ (6..0) ++ [\rest], 1), \dur, 0.25).play;
+Pbind(\scale, a, \degree, Pseq((0..7) ++ (6..0) ++ [\rest], 1), \dur, 0.25).play
+
+( // Boot Pipewire Server
+Server.program = "pw-jack scsynth";
+s.boot;
+QtGUI.style = "kvantum-dark";
+)
+s.reboot;
+s.scope;
+NetAddr.langPort;
+o = OscFunc({ arg msg, time, addr, recvPort;  })
+
+
+
+OSCdef(\test, {|msg, time, addr, recvPort| \unmatching.postln}, '/chat', n);
+
+(
+~slider = OSCdef.new(\test1,
+    {
+        arg msg;
+        // msg.postln;
+        ~sliderValue = msg.asFloat;
+    }, "/slider", recvPort:8004)
+)
+~sliderValue.poll;
+(
+SynthDef(\simpleSine, { |out=0, freq=440, amp=0.1, gate=1|
+    var env = EnvGen.ar(Env.adsr(0.01, 0.1, 0.8, 0.5), gate, doneAction: 2);
+    Out.ar(out, SinOsc.ar(freq) * amp * env);
+}).add;
+)
+
+(
+Pbind(
+    \instrument, \simpleSine,
+    \note, Pseq([60, 62, 67], inf),
+    \amp, ~sliderValue
+).play;
+)
 
 ( // Complex Synth and Pattern
 t = TempoClock(144/30);
 
 SynthDef(\brds, {
-    | note = 40, harm = 1, timbre = 1, morph = 0, decay = 0.1, eng = 2 |
+  | note = 40, harm = 1, timbre = 1, morph = 0, decay = 0.1, eng = 2 |
 	var outenv =  EnvGen.kr(Env.perc(0.001, decay, 1, -4), doneAction: Done.freeSelf);
-    var sig = MiPlaits.ar(note, eng, harm,  timbre, morph, mul:1);
+  var sig = MiPlaits.ar(note, eng, harm,  timbre, morph, mul:1);
 	Out.ar(0, sig * outenv);
 }).add;
 
 Pbind(
 	\instrument, \brds,
 	\note, Pseq([40, 42, 45, 46, 48], inf),
-    \harm, Prand([0.1, 1, 0.3], inf),
+  \harm, Prand([0.1, 1, 0.3], inf),
 	\eng, Prand([9, 12, 3], inf),
 	\decay, Prand([0.3, 1, 3], inf)
 ).play(t);
@@ -41,7 +85,7 @@ Pbind(
 n = 40;
 {SinOsc.ar([n,SinOsc.kr(1/10).range(n-2,n+2)], mul: 0.2)}.play;
 {
-    var mod = LFNoise1.kr(0.5,0.5,0.5);
+  var mod = LFNoise1.kr(0.5,0.5,0.5);
 	var mod2 = LFNoise1.kr(0.3,0.2,0.5);
 	// SinOsc.ar([n,SinOsc.kr(1/10).range(n-2,n+2)], mul: 0.2);
 	Out.ar(0,
@@ -69,7 +113,7 @@ m = {
     var timb = LFNoise1.kr(0.3).range(0, 1);
     var harm = LFNoise1.kr(0.3).range(0, 1);
     var morph = LFNoise1.kr(0.3).range(0, 1);
-    var sig1 = SinOsc.ar(freq/2!2, mul: 0.2); // frequency input
+    var sig1 = SinOsc.ar(freq!2, mul: 0.2); // frequency input
     var sig2 = MiPlaits.ar(midiPitch, timbre:timb, morph:morph, harm:harm, engine:engine, mul: 1, trigger:trig, lpg_colour:0.1, decay:0.8); // MIDI note number in the scale from midiPitch
     MiVerb.ar(Mix([sig1, sig2]));
 }.play
@@ -80,9 +124,9 @@ m.set(\engine, rrand(1, 11)); // sets arg/var for function
 {
     var mod = BPF.ar(
         WhiteNoise.ar(1!2),
-        freq: Saw.kr(0.25).range(4000, 40),
-        rq: 0.7);
-    var sig = SinOsc.ar(40, phase:mod, mul: Saw.kr(0.5));
+        freq: Saw.kr(0.25).range(30, 3000),
+        rq: 0.9);
+    var sig = SinOsc.ar(60, phase:mod, mul: Saw.kr(0.5));
     Out.ar(0, sig!2);
 }.play;
 )
@@ -125,7 +169,8 @@ a = Pseries(0, 0.25, inf).exp; a.asStream.nextN(8);
 (
 {
     // Define harmonic minor scale degrees (semitones from root)
-    var harmMinor = [0, 2, 3, 5, 7, 8, 11];
+    // var harmMinor = [0, 2, 3, 5, 7, 8, 11];
+    var harmMinor = Scale.harmonicMinor.degrees;
 
     // Generate random values with LFNoise0
     var noiseRate = 4; // change per second
@@ -160,7 +205,7 @@ a = Pseries(0, 0.25, inf).exp; a.asStream.nextN(8);
 {
     var timb = LFNoise1.kr(0.03,0.5,0.5);
     var color = LFNoise1.kr(0.05,0.5,0.5);  // chord
-    MiBraids.ar(38, timb, color, 40, resamp: 1) ! 2;
+    MiBraids.ar([38, 45], timb, color, 40, resamp: 1);
 }.play
 )
 
@@ -195,7 +240,7 @@ a = Pseries(0, 0.25, inf).exp; a.asStream.nextN(8);
     var decim = TRand.kr(1,32,trig);
     var dist = LFTri.kr(0.2).range(0,1);
 
-    MiBraids.ar(40, 0.7, 0.7, 34, trig, resamp: 2, decim: decim, bits: 3, ws: dist, mul: 0.5) ! 2;
+    MiBraids.ar(40!2, 0.7, 0.7, 34, trig, resamp: 2, decim: decim, bits: 3, ws: dist, mul: 0.5);
 }.play
 )
 
@@ -237,7 +282,7 @@ more:
     var pit = Latch.kr(WhiteNoise.kr(), trig).range(30, 60).round;
     var struct = LFNoise2.kr(0.4).range(0,1);
 
-    MiRings.ar(0, 0, pit, struct, 0.5, 0.7, 0.15, model: 1, poly: 4, mul: 0.2)
+    MiRings.ar(0, 0, pit, struct, 0.5, 0.7, 0.15, model: 1, poly: 4, mul: 0.7)
 }.play
 )
 
@@ -298,7 +343,7 @@ more:
     var timbre = MouseY.kr(0,1);
     var morph = LFNoise2.kr(0.2).range(0,1);
     var trigger = Impulse.ar(8);
-    MiPlaits.ar(48, 2, harm,  timbre, morph, trigger, decay: 0.5)
+    MiPlaits.ar(48, 2, harm,  timbre, morph, trigger, decay: 0.2)
 }.play
 )
 
@@ -328,18 +373,6 @@ more:
 )
 
 
-(   // super saw
-{
-    var harm = 0.16;
-    var timbre = 0;
-    var morph = 1;
-    var pit = TIRand.kr(39, 49, Dust.kr(0.5));
-    var out = MiPlaits.ar(pit, 8, harm, timbre, morph, mul: 0.3);
-    out[0]!2
-}.play
-)
-
-
 (   // slow swarm
 {
     var harm = 0.9;
@@ -347,17 +380,6 @@ more:
     var morph = 0.5;
     var out = MiPlaits.ar(48, 8, harm, timbre, morph);
     Mix.ar([out[0]*0.03, out[1]!2])
-}.play
-)
-
-
-(   // inharmonic string
-{
-    var harm = LFNoise2.kr(0.2).range(0,1);
-    var timbre = 0.0;
-    var morph = 0.85;
-    var out = MiPlaits.ar(60, 11, harm, timbre, morph);
-    out[0]!2
 }.play
 )
 
@@ -383,32 +405,21 @@ more:
     var trigger = Impulse.kr(8);
     var lev = TRand.kr(trig: trigger).squared;
     MiPlaits.ar(47, 14, harm, timbre, morph, trigger, lev, fm_mod: 0.2, timb_mod: 0.43, decay: 0.4)
-}
-)
+};
 ~snares.play;
-
-(   // filtered noise
-{
-    var harm = 0.575;
-    var timbre = 0.02;
-    var morph = LFNoise1.kr(0.3).range(0.55,0.9); // filter resonance
-    MiPlaits.ar(62, 9, harm, timbre, morph);
-}.play
 )
 
-
-(  // something...
-{
-    var trigger = Dust.kr( LFNoise2.kr(0.1).range(0.1, 7) );
-    var harmonics = SinOsc.kr(0.03, 0, 0.5, 0.5).range(0.0, 1.0);
-    var timbre = LFTri.kr(0.07, 0, 0.5, 0.5).range(0.0, 1.0);
-    var morph = LFTri.kr(0.11, 0, 0.5, 0.5).squared;
-    var pitch = TIRand.kr(24, 48, trigger);
-    var engine = TRand.kr(0, 15, trig: trigger).round;
-    var sub = SinOsc.ar(pitch.midicps, 0, 0.1);
-
-    var mi = MiPlaits.ar( pitch, engine, harmonics, timbre, morph,
-        trigger: trigger, decay: 0.8, lpg_colour: 0.2, mul: 0.5);
-    mi + sub
-}.play
+(
+x.free;
+x = {
+    var lfn = LFNoise2.kr(1);
+    var env = Env.perc(attackTime:0.01, releaseTime:1.0, level:1.0, curve:-4.0);
+    var pul = LFPulse.kr(freq:LFNoise1.kr(4).range(1,20));
+    var eg = EnvGen.ar(envelope:env, gate:pul, levelScale:50.0, levelBias:0.0, timeScale:1.0, doneAction:2);
+    var bpf = BPF.ar(in:eg, freq:lfn.range(500, 2500), rq:0.01, mul:eg, add:0.0);
+    var pan = Pan2.ar(in: bpf, pos: lfn);
+    MiVerb.ar(inputArray:pan, time:0.99, drywet:eg/30, damp:0.0, hp:0.05, freeze:0, diff:0.925, mul:1.2, add:0.0)
+    }.play;
 )
+
+s.meter;

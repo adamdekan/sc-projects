@@ -1,3 +1,4 @@
+
 Pbind(\degree, 0, \amp, 0.1).play;
 Pbind(\degree, Pseries(0, 1, 30), \dur, 0.05, \amp, 0.2).trace.play;
 
@@ -11,13 +12,27 @@ Pbind(\degree, Pseries(0, 1, 30), \dur, 0.05, \amp, 0.2).trace.play;
 )
 
 (
-Pbind(
-    \degree, Pseq([0, 2, 3, 5, 6, 7], inf),
-    \dur, Pseq([0.2, 0.1, 0.1, 0.2, 0.35], inf),
-    \amp, 0.1,
+SynthDef.new(name:"ssin", ugenGraphFunc:{
+    arg freq = 440, amp = 0.1, release = 0.01;
+    var env = Env.perc(level:amp, releaseTime:release).kr(2);
+    var snd = SinOsc.ar([freq, freq + LFNoise1.kr(freq:1, mul:30)], 0, env);
+    Out.ar(0, snd);
+}).add;
+)
+
+s.plotTree;
+
+(
+x = Pbind(
+    \instrument, \ssin,
+    \degree, Pxrand([0, 2, 3, 5, 7] + 7, inf),
+    \dur, Prand([0.2, 0.1, 0.1, 0.2, 0.35], inf),
+    \release, Prand([0.06, 0.01, 0.5, 2, 0.35]*2, inf),
+    \amp, Prand([0.06, 0.01, 0.1, 0.15, 0.1]/2, inf),
     \legato, 0.9.rand,
 ).trace.play;
 )
+x.stop;
 
 (
 Pbind (
