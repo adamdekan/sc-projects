@@ -52,13 +52,11 @@ Pbind (
 
 (
 Pbind (
-	\instrument, \fmSynth,
     \note, Pseries(0, 3, 15),
-    \dur, 0.05,
+    \dur, 0.2,
     \amp, 1,
 ).play;
 )
-
 
 (
 Pbind (
@@ -80,16 +78,9 @@ Pbind(
 Pbind (
     \note, Pseries(0, 2, 15),
     \dur, 0.15,
-    \amp, 0.1,
+    \amp, 0.3,
 ).play;
 )
-
-( // basic use
-    w=Window.new.front;
-    g=EZKnob(w, 50@90," test  ", \freq,{|a| a.value.postln});
-    g.setColors(Color.grey,Color.white);
-);
-
 
 ( // Scales
 Pbind(
@@ -100,7 +91,7 @@ Pbind(
 ).play;
 )
 
-
+// execute multiple Pbinds in parallel
 ( // open big block
     Pbind(
         \freq, Pn(Pseries(110, 111, 10)),
@@ -138,10 +129,20 @@ Pbind(
 ).play;
 Pbind(
     \degree, Pseq(~scale.reverse + 7),
-    \dur, Pseq(~durs),
+    \dur, Pseq(~durs.scramble),
     \amp, 1,
 ).play;
 )
+
+
+
+Array.geom(10, 1, 2).postln;
+Array.geom(10, 1, 2).normalize.postln;
+Array.geom(10, 1, 2).scramble.postln;
+Array.series(5, 10, 2).postln;
+Array.series(5, 10, 2).rotate(-3).postln;
+Array.iota(2, 3, 4);
+
 
 (
 p = Pbind(
