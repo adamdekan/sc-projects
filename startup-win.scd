@@ -1,7 +1,7 @@
 (
 if (\SCNvim.asClass.notNil) {
   Server.program = "C:/sc/scsynth.exe";
-}
+};
 s.options.numInputBusChannels = 2;
 s.options.numOutputBusChannels = 2;
 s.options.device = "ASIO4ALL v2";
