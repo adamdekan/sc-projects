@@ -47,7 +47,7 @@ Pbind(
 )
 
 ( // Complex Synth and Pattern
-t = TempoClock(144/30);
+//t = TempoClock(144/30);
 
 SynthDef(\brds, {
   | note = 40, harm = 1, timbre = 1, morph = 0, decay = 0.1, eng = 2 |
@@ -86,7 +86,7 @@ n = 40;
 // a.addAll(arrayB);
 (  // Joining arrays for 2 octaves MIDI notes in scale (C2 as root)
 ~pentscale = Scale.minorPentatonic.degrees ++ (Scale.minorPentatonic.degrees + 12) + 48;
-s.freeAll; // stop all previos synths
+//s.freeAll; // stop all previos synths
 m = {
     | speed = 2, engine = 9 |
     var scale = ~pentscale + 24;
@@ -100,10 +100,11 @@ m = {
     var morph = LFNoise1.kr(0.3).range(0, 1);
     var sig1 = SinOsc.ar(freq!2, mul: 0.2); // frequency input
     var sig2 = MiPlaits.ar(midiPitch, timbre:timb, morph:morph, harm:harm, engine:engine, mul: 1, trigger:trig, lpg_colour:0.1, decay:0.8); // MIDI note number in the scale from midiPitch
-    MiVerb.ar(Mix([sig1, sig2]));
-}.play
+    MiVerb.ar(Mix([sig1, sig2])/8);
+}.play(quant: [2])
 )
 m.set(\engine, rrand(1, 11)); // sets arg/var for function
+m.free;
 
 (
 {

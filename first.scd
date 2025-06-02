@@ -1,18 +1,23 @@
-s.boot;
 s.volume.gui;
+s.meter;
 
-SynthDef(\default, {
-	arg freq = 440, amp = 0.5;
-	var sig = SinOsc.ar(freq) * amp;
-	Out.ar(0, sig.dup);
+(
+SynthDef(\first, {
+  var env = Env.perc(releaseTime:2, curve:-4 ).kr(doneAction:2);
+	var sig = SinOsc.ar(\freq.kr(440)+(env*LFNoise2.kr(1/4)*30)) * \amp.kr(1);
+	Out.ar(0, sig!2 *env )
 }).add;
 
 Pbind(
-	\instrument, \default,}
-	\freq, Pseq([440, 550, 660], inf),
-	\amp, Pseq([0.5, 0.3, 0.1], inf),
-	\dur, 0.2
+	\instrument, \first,
+  \degree, Pwhite(0, 7),
+  \scale, Scale.hijaz,
+  \root, 5,
+  \octave, 5,
+	\amp, Pseq([Rest(1), 0.3, 0.1], inf),
+	\dur, 1/4
 ).play;
+)
 
 ~bpm = 80;
 ~beatDur = 60 / ~bpm; // duration of 1 beat in seconds
@@ -33,7 +38,7 @@ f;
 // randomizatoin and counting
 (
 g = { 3.0.rand };
-10.do({f.value(g);});
+10.do({g.value});
 )
 
 ( //BLK
@@ -70,7 +75,7 @@ SynthDef(\highClick, {
 ( //BLK
 SynthDef(\beep, { arg freq = 440, dur = 0.01;
 	var env = EnvGen.kr(Env.perc(0.001, dur), doneAction: 2);
-	var sig = SinOsc.ar(freq) \* env;
+	var sig = SinOsc.ar(freq) * env;
 	Out.ar(0, sig.dup);
 }).add;
 )
@@ -79,7 +84,7 @@ SynthDef(\beep, { arg freq = 440, dur = 0.01;
 SynthDef(\noise, {
 	arg amp = 0.1, dur = 0.3;
 	var env = EnvGen.kr(Env.perc(0.01, dur.rand), doneAction: 2);
-	var sig = WhiteNoise.ar _ amp _ env;
+	var sig = WhiteNoise.ar * amp * env;
 	Out.ar(0, sig.dup);
 }).add;
 )
@@ -93,7 +98,7 @@ SynthDef(\noise, {
 				Synth(\beep, [\freq, baseFreq + 200.rand]);
 				Synth(\noise, [\freq, baseFreq + 200.rand]);
 			};
-			(beatDur \* beatMult).wait;
+			(beatDur *beatMult).wait;
 		}
 	}).play;
 };

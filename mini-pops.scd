@@ -1,3 +1,8 @@
+s.volume.gui;
+s.latency;
+s.mute;
+s.unmute;
+
 (
 ~busReverb = Bus.audio(server:s, numChannels:2);
 r = {
@@ -7,29 +12,40 @@ r = {
 }.play;
 
 SynthDef(\sine, {
-    |freq = 440, phase = 0, mul = 1, hold = 0.3, amp = 1, rbus = 0|
-    var env = Env.new(levels: [0, 1, 1, 0], times: [0.03, hold, 0.03], curve: [-5, 0, -4]);
+    var env = Env.new(
+        levels: [0, 1, 1, 0],
+        times: [0.03, \hold.kr(1), 0.03],
+        curve: [-5, 0, -4]);
     var envAdsr = EnvGen.kr(env, doneAction: 2);
-    var sig = SinOsc.ar(freq: freq, phase: phase, mul: mul) * envAdsr * amp;
+    var sig = SinOsc.ar(\freq.kr(440), \phase.kr(0)) * envAdsr * \amp.kr(1);
     // Route either to output bus 0 or to ~busReverb depending on rbus
-    Out.ar(Select.kr(rbus, [0, ~busReverb.index]), sig ! 2);
+    Out.ar(Select.kr(\rbus.kr(0), [0, ~busReverb.index]), sig ! 2);
 }).add;
 
+
 SynthDef(\white, {
-  |freq=440, phase=0, mul=1, hold=0.3, amp=1 |
   var envDec = Env.perc(attackTime:0.01, releaseTime:0.01).kr(doneAction: 2);
   var sig = WhiteNoise.ar();
   sig = Pan2.ar(sig, LFNoise2.kr(4));
-  Out.ar(0, sig *envDec *amp );
+  Out.ar(0, sig *envDec *\amp.kr(1) );
 }).add;
 
 SynthDef(\pulse, {
-  |freq=440, speed=1, mul=1, hold=0.3, amp=1 |
-  var sig = Impulse.ar(speed);
+  var sig = Impulse.ar(\speed.kr(1));
   var envDec = Env.perc(releaseTime:0.01).kr(doneAction: 2);
   sig = Pan2.ar(sig, LFNoise2.kr(4));
-  Out.ar(0, sig *amp );
+  Out.ar(0, sig  *\amp.kr(1) );
 }).add;
+)
+
+(
+SynthDef(\kick, { 
+  var env = Env.perc(releaseTime:0.1).kr(doneAction: 2);
+  Out.ar(0, SinOsc.ar(freq:env.exprange(10, 300)/1.5) *env /1 !2);
+}).add;
+~kick.stop;
+p = Pbind(\instrument, \kick, \dur, Prand([1], inf));
+~kick = p.play(quant: [2]);
 )
 
 (
@@ -39,7 +55,7 @@ b = Pbind(
   \instrument, \pulse,
   \hold, Pwhite.new(lo:0.001, hi:0.01, length:inf),
   \dur, Pseq(~list.dupEach(4).scramble, inf),
-  \amp, 1
+  \amp, 10
 );
 ~clck = b.play(quant: [2]);
 )
@@ -52,7 +68,7 @@ a = Pbind(
   \hold, Pseq([0.1, 0.03, 2, Rest(1)], inf),
   \rbus, Pseq([0, 1, 0, 0], inf),
   \dur, Pseq([2], inf),
-  \amp, 0.2,
+  \amp, 1/2
 );
 ~sin = a.play(quant: [2]);
 )
@@ -70,25 +86,18 @@ b = Pbind(
 ~hihat = b.play(quant: [2]);
 )
 
-(
-~list = Array.fib(14, 2, 1)/1000;
-~hihat.stop;
-b = Pbind(
-  \instrument, \white,
-  \hold, Pwhite.new(lo:0.001, hi:0.01, length:inf),
-  \dur, Pseq(~list, inf),
-  \amp, 0.1
-);
-~hihat = b.play(quant: [2]);
-)
-
-(
-{ 
-  var env = Env.perc(releaseTime:0.1).kr(doneAction: 2);
-  SinOsc.ar(freq:env.exprange(10, 300), mul:env)!2;
-}.play
-)
-
+//(
+//~list = Array.fib(14, 2, 1)/1000;
+//~hihat.stop;
+//b = Pbind(
+//  \instrument, \white,
+//  \hold, Pwhite.new(lo:0.001, hi:0.01, length:inf),
+//  \dur, Pseq(~list, inf),
+//  \amp, 0.1
+//);
+//~hihat = b.play(quant: [2]);
+//)
+//
 ////////////////////////
 ////////////////////////
 ////////////////////////

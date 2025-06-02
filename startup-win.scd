@@ -2,15 +2,29 @@
 if (\SCNvim.asClass.notNil) {
   Server.program = "C:/sc/scsynth.exe";
 };
+Server.default.options.safetyClipThreshold = 1;
 s.options.numInputBusChannels = 2;
 s.options.numOutputBusChannels = 2;
 s.options.device = "ASIO4ALL v2";
 s.boot;
+s.waitForBoot {
+    // Master limiter SynthDef
+    SynthDef(\masterLimiter, {
+        var in, out;
+        in = In.ar(0, 2); // assuming stereo master bus is 0 and 1
+        out = tanh(in) * 0.7;
+        ReplaceOut.ar(0, out); // replaces final output with limited signal
+    }).add;
+
+    // Run master limiter AFTER everything is mixed
+    Synth.after(s.defaultGroup, \masterLimiter);
+};
 )
-{ MiPlaits.ar(50, mul:0.1) }.play
+{ MiPlaits.ar(50)*300}.play
 
 // Always reboot server after ASIO change
 s.reboot;
+Server.killAll;
 
 // Other settings
 ServerOptions.outDevices;

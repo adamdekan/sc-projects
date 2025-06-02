@@ -20,6 +20,7 @@ SynthDef(\monoMoog, {
 ~moog.play();
 )
 
+~moog.free;
 
   
 { Decay.ar(Impulse.ar(XLine.kr(1,40,3), 0.25), 0.2, PinkNoise.ar!2, 0) }.play;
