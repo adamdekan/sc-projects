@@ -36,13 +36,14 @@ SynthDef(\pulse, {
   sig = Pan2.ar(sig, LFNoise2.kr(4));
   Out.ar(0, sig  *\amp.kr(1) );
 }).add;
-)
 
-(
 SynthDef(\kick, { 
   var env = Env.perc(releaseTime:0.1).kr(doneAction: 2);
   Out.ar(0, SinOsc.ar(freq:env.exprange(10, 300)/1.5) *env /1 !2);
 }).add;
+)
+
+(
 ~kick.stop;
 p = Pbind(\instrument, \kick, \dur, Prand([1], inf));
 ~kick = p.play(quant: [2]);
@@ -64,11 +65,12 @@ b = Pbind(
 ~sin.stop;
 a = Pbind(
   \instrument, \sine,
-  \freq, Pseq([8000, 1000, 50, Rest(1)], inf),
+  \freq, Pseq([8000, 1000, 4000, Rest(1)], inf),
   \hold, Pseq([0.1, 0.03, 2, Rest(1)], inf),
-  \rbus, Pseq([0, 1, 0, 0], inf),
-  \dur, Pseq([2], inf),
-  \amp, 1/2
+  \rbus, Pseq([0, 1, 1, 1], inf),
+  \dur, Pseq([1], inf),
+  \amp, 1/2,
+  \root, [-14, 32]
 );
 ~sin = a.play(quant: [2]);
 )
@@ -101,3 +103,12 @@ b = Pbind(
 ////////////////////////
 ////////////////////////
 ////////////////////////
+
+
+(
+var a, b;
+a = Pseq([1, 2, 3], inf);    // infinite repeat
+b = a.asStream;
+10.do({ b.next.postln; });
+)
+

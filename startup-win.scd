@@ -20,7 +20,7 @@ s.waitForBoot {
     Synth.after(s.defaultGroup, \masterLimiter);
 };
 )
-{ MiPlaits.ar(50)*300}.play
+{ MiPlaits.ar(50)*3}.play
 
 // Always reboot server after ASIO change
 s.reboot;
